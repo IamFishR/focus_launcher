@@ -30,4 +30,12 @@ class AppLauncher {
       print("Failed to open default launcher settings: '${e.message}'.");
     }
   }
+
+  static Future<void> openDialer() async {
+    try {
+      await _channel.invokeMethod('openDialer');
+    } on PlatformException catch (e) {
+      print("Failed to open dialer: '${e.message}'.");
+    }
+  }
 }

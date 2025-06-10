@@ -30,6 +30,9 @@ class MainActivity: FlutterActivity() {
                 "openDefaultLauncherSettings" -> {
                     openDefaultLauncherSettings(result)
                 }
+                "openDialer" -> {
+                    openDialer(result)
+                }
                 else -> {
                     result.notImplemented()
                 }
@@ -79,6 +82,18 @@ class MainActivity: FlutterActivity() {
         } catch (e: Exception) {
             println("Error opening default launcher settings: ${e.message}")
             result.error("ERROR_OPENING_SETTINGS", "Could not open default home settings.", e.message)
+        }
+    }
+
+    private fun openDialer(result: MethodChannel.Result) {
+        try {
+            val intent = Intent(Intent.ACTION_DIAL)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(intent)
+            result.success(null)
+        } catch (e: Exception) {
+            println("Error opening dialer: ${e.message}")
+            result.error("ERROR_OPENING_DIALER", "Could not open dialer.", e.message)
         }
     }
 }
