@@ -6,7 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPre
 import 'app_launcher.dart';
 import 'theme_notifier.dart';
 import 'theme.dart';
-import 'settings_page.dart'; // Import SettingsPage // Already correctly importing keys from settings_page
+import 'settings_page.dart';
+import 'start_menu_apps_list.dart'; // Import the new widget
 
 void main() {
   runApp(
@@ -46,9 +47,21 @@ class _MyHomePageState extends State<MyHomePage> {
   late DateTime _currentTime;
 
   String? _favoriteApp1Name;
-  String? _favoriteApp1Package;
-  String? _favoriteApp2Name;
-  String? _favoriteApp2Package;
+  // String? _favoriteApp1Name; // Removed: No longer used for home screen favs
+  // String? _favoriteApp1Package; // Removed
+  // String? _favoriteApp2Name; // Removed
+  // String? _favoriteApp2Package; // Removed
+
+  bool _isStartMenuVisible = false;
+
+  // Method to toggle Start Menu visibility
+  void _toggleStartMenu() {
+    if (mounted) {
+      setState(() {
+        _isStartMenuVisible = !_isStartMenuVisible;
+      });
+    }
+  }
 
   @override
   void initState() {
@@ -61,19 +74,19 @@ class _MyHomePageState extends State<MyHomePage> {
         });
       }
     });
-    _loadFavoriteApps();
+    // _loadFavoriteApps(); // Removed: No longer used for home screen favs
   }
 
-  Future<void> _loadFavoriteApps() async {
-    final prefs = await SharedPreferences.getInstance();
-    if (!mounted) return;
-    setState(() {
-      _favoriteApp1Name = prefs.getString(favApp1NameKey); // favApp1NameKey from settings_page.dart
-      _favoriteApp1Package = prefs.getString(favApp1PackageKey);
-      _favoriteApp2Name = prefs.getString(favApp2NameKey);
-      _favoriteApp2Package = prefs.getString(favApp2PackageKey);
-    });
-  }
+  // Future<void> _loadFavoriteApps() async { // Removed
+  //   final prefs = await SharedPreferences.getInstance();
+  //   if (!mounted) return;
+  //   setState(() {
+  //     _favoriteApp1Name = prefs.getString(favApp1NameKey);
+  //     _favoriteApp1Package = prefs.getString(favApp1PackageKey);
+  //     _favoriteApp2Name = prefs.getString(favApp2NameKey);
+  //     _favoriteApp2Package = prefs.getString(favApp2PackageKey);
+  //   });
+  // }
 
   @override
   void dispose() {
@@ -96,139 +109,239 @@ class _MyHomePageState extends State<MyHomePage> {
       context,
       MaterialPageRoute(builder: (context) => const SettingsPage()),
     );
-    _loadFavoriteApps(); // Reload favorites after returning
+    // _loadFavoriteApps(); // Removed: No longer used for home screen favs
+  }
+
+  @override
+  // Method to build the right pane of the Start Menu
+  Widget _buildStartMenuRightPane(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      // width: 180, // Fixed width for the right pane, or use flex
+      padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 8.0),
+      // color: theme.colorScheme.surfaceVariant.withOpacity(0.1), // Optional subtle background
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+            child: Text(
+              "Pinned",
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.onSurface,
+              ),
+            ),
+          ),
+          const Divider(thickness: 1),
+          ListTile(
+            leading: Icon(Icons.phone_outlined, color: theme.colorScheme.onSurface),
+            title: Text("Phone", style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface)),
+            onTap: () {
+              AppLauncher.openDialer();
+              _toggleStartMenu(); // Close start menu
+            },
+            dense: true,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 8.0),
+          ),
+          // Add more Pinned items or Recents here later
+          // For now, just a placeholder to fill some space or show it's empty
+          const Expanded(
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.all(8.0),
+                // child: Text(
+                //   "More items coming soon...",
+                //   textAlign: TextAlign.center,
+                //   style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                // ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    String formattedTime = DateFormat('HH:mm:ss').format(_currentTime);
-    String formattedDate = DateFormat('EEE, MMM d, yyyy').format(_currentTime);
+    // Taskbar time and date formats
+    String taskbarFormattedTime = DateFormat('h:mm a').format(_currentTime); // e.g., "3:45 PM"
+    String taskbarFormattedDate = DateFormat('M/d/yyyy').format(_currentTime); // e.g., "10/25/2023"
+
     final themeNotifier = Provider.of<ThemeNotifier>(context);
+    final theme = Theme.of(context); // Cache theme
+
+    // Determine taskbar background color based on theme
+    Color taskbarColor = themeNotifier.isDarkMode
+        ? Colors.grey[850]! // Darker grey for dark mode taskbar
+        : Colors.grey[200]!; // Lighter grey for light mode taskbar
+
+    Color taskbarIconColor = theme.colorScheme.onSurface.withOpacity(0.8);
+    TextStyle taskbarTextStyle = TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.9), fontSize: 13);
+    const double taskbarHeight = 56.0;
+
 
     return Scaffold(
-      // Background color will be handled by theme's scaffoldBackgroundColor
-      body: GestureDetector(
-        onVerticalDragUpdate: _onVerticalDragUpdate,
-        child: Container(
-          color: Colors.transparent, // Makes entire area draggable
-          child: Stack( // Use Stack to position the theme toggle button
+      body: Stack( // Wrap the main Column with a Stack to overlay the Start Menu
+        children: [
+          Column(
             children: [
-              Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Text(
-                      formattedTime,
-                      // Use theme for text style
-                      style: Theme.of(context).textTheme.displayLarge,
-                    ),
-                    Text(
-                      formattedDate,
-                      // Use theme for text style
-                      style: Theme.of(context).textTheme.headlineMedium,
-                    ),
-                  ],
-                ),
-              ),
-              Positioned( // Position the button in the top-right corner
-                top: 40.0,
-                right: 20.0,
-                child: Row( // Use a Row to place buttons side-by-side
-                  children: [
-                    IconButton(
-                      icon: Icon(
-                        themeNotifier.isDarkMode ? Icons.light_mode : Icons.dark_mode,
-                        color: Theme.of(context).primaryColor,
-                      ),
-                      onPressed: () {
-                        Provider.of<ThemeNotifier>(context, listen: false).toggleTheme();
-                      },
-                    ),
-                    IconButton( // Settings button
-                      icon: Icon(
-                        Icons.settings,
-                        color: Theme.of(context).primaryColor,
-                      ),
-                      onPressed: _navigateToSettings, // Updated to call _navigateToSettings
-                    ),
-                  ],
-                )
-              ),
-              Positioned( // Position the call button in the bottom-left corner
-                bottom: 40.0,
-                left: 20.0,
-                child: IconButton(
-                  icon: Icon(
-                    Icons.phone_outlined,
-                    color: Theme.of(context).primaryColor, // Use primaryColor from theme
-                    size: 28.0, // Slightly larger icon for a primary action button
-                  ),
-                  onPressed: () {
-                    AppLauncher.openDialer();
+              Expanded(
+                child: GestureDetector(
+                  onVerticalDragUpdate: _onVerticalDragUpdate,
+                  onTap: () { // Tap on desktop area to close Start Menu
+                    if (_isStartMenuVisible) {
+                      _toggleStartMenu();
+                    }
                   },
+                  child: Container(
+                    color: Colors.transparent,
+                    child: Stack( // This Stack is for the main desktop area buttons
+                      children: [
+                        // New Main Content: Title and Quote
+                        Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                Text(
+                                  "Focus",
+                                  style: theme.textTheme.headlineMedium?.copyWith(
+                                    color: theme.colorScheme.onSurface.withOpacity(0.7),
+                                  ),
+                                ),
+                                const SizedBox(height: 24), // Increased spacing
+                                Text(
+                                  "\"The successful warrior is the average man, with laser-like focus.\" - Bruce Lee",
+                                  textAlign: TextAlign.center,
+                                  style: theme.textTheme.titleSmall?.copyWith(
+                                    fontStyle: FontStyle.italic,
+                                    color: theme.colorScheme.onSurface.withOpacity(0.6),
+                                    height: 1.5, // Improved line spacing for readability
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        // Settings and Theme Toggle Buttons (Top Right)
+                        Positioned(
+                          top: 40.0,
+                          right: 20.0,
+                          child: Row(
+                            children: [
+                              IconButton(
+                                icon: Icon(
+                                  themeNotifier.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                                  color: theme.primaryColor.withOpacity(0.7), // Slightly less prominent
+                                ),
+                                onPressed: () {
+                                  Provider.of<ThemeNotifier>(context, listen: false).toggleTheme();
+                                },
+                                tooltip: "Toggle Theme",
+                              ),
+                              IconButton(
+                                icon: Icon(
+                                  Icons.settings,
+                                  color: theme.primaryColor.withOpacity(0.7), // Slightly less prominent
+                                ),
+                                onPressed: _navigateToSettings,
+                                tooltip: "Settings",
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Removed old Call Button and Favorite App Placeholders from here
+                      ],
+                    ),
+                  ),
                 ),
               ),
-              Positioned(
-                bottom: 40.0, // Match the call button's vertical position
-                right: 20.0,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  mainAxisSize: MainAxisSize.min,
+              // Taskbar Implementation
+              Container(
+                height: taskbarHeight,
+                color: taskbarColor,
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                child: Row(
                   children: <Widget>[
-                    if (_favoriteApp1Name != null && _favoriteApp1Name!.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 6.0), // Add some padding below first fav
-                        child: TextButton(
-                          style: TextButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            minimumSize: Size.zero, // Remove default minimum size
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap, // Remove extra tap area
-                          ),
-                          onPressed: () {
-                            if (_favoriteApp1Package != null && _favoriteApp1Package!.isNotEmpty) {
-                              AppLauncher.launchApp(_favoriteApp1Package!);
-                            }
-                          },
-                          child: Text(
-                            _favoriteApp1Name!,
-                            textAlign: TextAlign.end,
-                            style: TextStyle(
-                              color: Theme.of(context).primaryColor,
-                              fontSize: 16.0,
-                            ),
-                          ),
-                        ),
-                      ),
-                    if (_favoriteApp2Name != null && _favoriteApp2Name!.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 6.0), // Add some padding above second fav
-                        child: TextButton(
-                           style: TextButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          onPressed: () {
-                            if (_favoriteApp2Package != null && _favoriteApp2Package!.isNotEmpty) {
-                              AppLauncher.launchApp(_favoriteApp2Package!);
-                            }
-                          },
-                          child: Text(
-                            _favoriteApp2Name!,
-                            textAlign: TextAlign.end,
-                            style: TextStyle(
-                              color: Theme.of(context).primaryColor,
-                              fontSize: 16.0,
-                            ),
-                          ),
-                        ),
-                      ),
+                    IconButton(
+                      icon: Icon(Icons.widgets_outlined, color: taskbarIconColor), // Updated "Start" icon
+                      onPressed: _toggleStartMenu, // Call toggle method
+                      tooltip: 'Start', // Updated tooltip
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.folder_outlined, color: taskbarIconColor),
+                      onPressed: () {
+                        AppLauncher.openFileManager();
+                      },
+                      tooltip: 'File Explorer', // Updated tooltip
+                    ),
+                    const Expanded(child: SizedBox()),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(taskbarFormattedTime, style: taskbarTextStyle),
+                        Text(taskbarFormattedDate, style: taskbarTextStyle.copyWith(fontSize: 11)),
+                      ],
+                    )
                   ],
                 ),
               ),
             ],
           ),
-        ),
+          // Start Menu Panel (Overlay)
+          if (_isStartMenuVisible)
+            Positioned(
+              bottom: taskbarHeight, // Position above the taskbar
+              left: 0,
+              // width: MediaQuery.of(context).size.width * 0.3, // Example: 30% of screen width for a more PC like menu
+              // Instead of right:0 for full width, let's give it a max width for larger screens
+              // and center it if it's not full width.
+              // For now, let's make it start from left and have a certain width or take full if small.
+              child: Container( // Use a container to constrain width if needed
+                width: MediaQuery.of(context).size.width > 600 ? 400 : MediaQuery.of(context).size.width, // Max width of 400, else full width
+                height: MediaQuery.of(context).size.height * 0.65, // 65% of screen height
+                child: Material(
+                  elevation: 12.0, // Increased elevation for more pop
+                  color: theme.colorScheme.surface.withOpacity(0.98), // Use surface color from theme, slightly transparent
+                  shape: const RoundedRectangleBorder( // Optional: slightly rounded corners for the top
+                     borderRadius: BorderRadius.only(topLeft: Radius.circular(8), topRight: Radius.circular(8))
+                  ),
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Text(
+                          "Start Menu", // Placeholder Title
+                          style: theme.textTheme.headlineSmall?.copyWith(color: theme.colorScheme.onSurface),
+                        ),
+                      ),
+                      const Divider(),
+                      Expanded(
+                        child: Row(
+                          children: [
+                            const Expanded(
+                              flex: 2, // App list takes more space
+                              child: StartMenuAppsList(),
+                            ),
+                            const VerticalDivider(width: 1, thickness: 1),
+                            // Right Pane for Pinned/Recent and User options
+                            Expanded(
+                              flex: 1, // Pinned/User takes less space
+                              child: _buildStartMenuRightPane(context),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
