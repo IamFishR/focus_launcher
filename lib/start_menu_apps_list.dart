@@ -30,15 +30,12 @@ class _StartMenuAppsListState extends State<StartMenuAppsList> {
       _error = '';
     });
     try {
-      // Temporarily, getInstalledApps will return List<Map<String, String>>
-      // It will be updated to include icons later.
-      final List<Map<String, String>> appsData = await AppLauncher.getInstalledApps();
+      // getInstalledApps now returns List<Map<String, dynamic>>
+      final List<Map<String, dynamic>> appsData =
+          await AppLauncher.getInstalledApps();
 
-      // Convert to List<Map<String, dynamic>> for future icon data
-      List<Map<String, dynamic>> appsWithDynamic = appsData.map((app) => Map<String, dynamic>.from(app)).toList();
-
-      // Sort apps alphabetically by name
-      appsWithDynamic.sort((a, b) {
+      // Sort apps alphabetically by name directly on appsData
+      appsData.sort((a, b) {
         final String nameA = a['name']?.toLowerCase() ?? '';
         final String nameB = b['name']?.toLowerCase() ?? '';
         return nameA.compareTo(nameB);
@@ -46,8 +43,8 @@ class _StartMenuAppsListState extends State<StartMenuAppsList> {
 
       if (!mounted) return;
       setState(() {
-        _apps = appsWithDynamic;
-        _filteredApps = appsWithDynamic;
+        _apps = appsData;
+        _filteredApps = appsData;
         _isLoading = false;
       });
     } catch (e) {
@@ -87,7 +84,8 @@ class _StartMenuAppsListState extends State<StartMenuAppsList> {
           padding: const EdgeInsets.all(8.0),
           child: TextField(
             controller: _searchController,
-            style: TextStyle(color: theme.textTheme.bodyLarge?.color, fontSize: 14),
+            style: TextStyle(
+                color: theme.textTheme.bodyLarge?.color, fontSize: 14),
             decoration: InputDecoration(
               hintText: 'Search apps...',
               hintStyle: TextStyle(color: theme.hintColor, fontSize: 14),
@@ -101,7 +99,8 @@ class _StartMenuAppsListState extends State<StartMenuAppsList> {
                       },
                     )
                   : null,
-              contentPadding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
+              contentPadding:
+                  const EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
               isDense: true,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8.0),
@@ -117,9 +116,15 @@ class _StartMenuAppsListState extends State<StartMenuAppsList> {
         if (_isLoading)
           const Expanded(child: Center(child: CircularProgressIndicator()))
         else if (_error.isNotEmpty)
-          Expanded(child: Center(child: Text(_error, style: TextStyle(color: theme.colorScheme.error))))
+          Expanded(
+              child: Center(
+                  child: Text(_error,
+                      style: TextStyle(color: theme.colorScheme.error))))
         else if (_filteredApps.isEmpty)
-          Expanded(child: Center(child: Text('No apps found.', style: theme.textTheme.bodyMedium)))
+          Expanded(
+              child: Center(
+                  child: Text('No apps found.',
+                      style: theme.textTheme.bodyMedium)))
         else
           Expanded(
             child: ListView.builder(
@@ -136,7 +141,8 @@ class _StartMenuAppsListState extends State<StartMenuAppsList> {
                   // leading: iconBytes != null
                   //     ? Image.memory(iconBytes, width: 32, height: 32, gaplessPlayback: true)
                   //     : const Icon(Icons.apps, size: 32), // Placeholder icon
-                  leading: const Icon(Icons.apps_outlined, size: 28), // Consistent placeholder
+                  leading: const Icon(Icons.apps_outlined,
+                      size: 28), // Consistent placeholder
                   title: Text(appName, style: const TextStyle(fontSize: 14)),
                   onTap: () {
                     if (packageName.isNotEmpty) {
@@ -146,7 +152,8 @@ class _StartMenuAppsListState extends State<StartMenuAppsList> {
                     }
                   },
                   dense: true,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 0),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16.0, vertical: 0),
                 );
               },
             ),

@@ -135,8 +135,11 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           const Divider(thickness: 1),
           ListTile(
-            leading: Icon(Icons.phone_outlined, color: theme.colorScheme.onSurface),
-            title: Text("Phone", style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface)),
+            leading:
+                Icon(Icons.phone_outlined, color: theme.colorScheme.onSurface),
+            title: Text("Phone",
+                style: TextStyle(
+                    fontSize: 14, color: theme.colorScheme.onSurface)),
             onTap: () {
               AppLauncher.openDialer();
               _toggleStartMenu(); // Close start menu
@@ -166,8 +169,10 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     // Taskbar time and date formats
-    String taskbarFormattedTime = DateFormat('h:mm a').format(_currentTime); // e.g., "3:45 PM"
-    String taskbarFormattedDate = DateFormat('M/d/yyyy').format(_currentTime); // e.g., "10/25/2023"
+    String taskbarFormattedTime =
+        DateFormat('h:mm a').format(_currentTime); // e.g., "3:45 PM"
+    String taskbarFormattedDate =
+        DateFormat('M/d/yyyy').format(_currentTime); // e.g., "10/25/2023"
 
     final themeNotifier = Provider.of<ThemeNotifier>(context);
     final theme = Theme.of(context); // Cache theme
@@ -178,26 +183,29 @@ class _MyHomePageState extends State<MyHomePage> {
         : Colors.grey[200]!; // Lighter grey for light mode taskbar
 
     Color taskbarIconColor = theme.colorScheme.onSurface.withOpacity(0.8);
-    TextStyle taskbarTextStyle = TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.9), fontSize: 13);
+    TextStyle taskbarTextStyle = TextStyle(
+        color: theme.colorScheme.onSurface.withOpacity(0.9), fontSize: 13);
     const double taskbarHeight = 56.0;
 
-
     return Scaffold(
-      body: Stack( // Wrap the main Column with a Stack to overlay the Start Menu
+      body: Stack(
+        // Wrap the main Column with a Stack to overlay the Start Menu
         children: [
           Column(
             children: [
               Expanded(
                 child: GestureDetector(
                   onVerticalDragUpdate: _onVerticalDragUpdate,
-                  onTap: () { // Tap on desktop area to close Start Menu
+                  onTap: () {
+                    // Tap on desktop area to close Start Menu
                     if (_isStartMenuVisible) {
                       _toggleStartMenu();
                     }
                   },
                   child: Container(
                     color: Colors.transparent,
-                    child: Stack( // This Stack is for the main desktop area buttons
+                    child: Stack(
+                      // This Stack is for the main desktop area buttons
                       children: [
                         // New Main Content: Title and Quote
                         Center(
@@ -208,8 +216,10 @@ class _MyHomePageState extends State<MyHomePage> {
                               children: <Widget>[
                                 Text(
                                   "Focus",
-                                  style: theme.textTheme.headlineMedium?.copyWith(
-                                    color: theme.colorScheme.onSurface.withOpacity(0.7),
+                                  style:
+                                      theme.textTheme.headlineMedium?.copyWith(
+                                    color: theme.colorScheme.onSurface
+                                        .withOpacity(0.7),
                                   ),
                                 ),
                                 const SizedBox(height: 24), // Increased spacing
@@ -218,8 +228,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                   textAlign: TextAlign.center,
                                   style: theme.textTheme.titleSmall?.copyWith(
                                     fontStyle: FontStyle.italic,
-                                    color: theme.colorScheme.onSurface.withOpacity(0.6),
-                                    height: 1.5, // Improved line spacing for readability
+                                    color: theme.colorScheme.onSurface
+                                        .withOpacity(0.6),
+                                    height:
+                                        1.5, // Improved line spacing for readability
                                   ),
                                 ),
                               ],
@@ -234,18 +246,24 @@ class _MyHomePageState extends State<MyHomePage> {
                             children: [
                               IconButton(
                                 icon: Icon(
-                                  themeNotifier.isDarkMode ? Icons.light_mode : Icons.dark_mode,
-                                  color: theme.primaryColor.withOpacity(0.7), // Slightly less prominent
+                                  themeNotifier.isDarkMode
+                                      ? Icons.light_mode
+                                      : Icons.dark_mode,
+                                  color: theme.primaryColor.withOpacity(
+                                      0.7), // Slightly less prominent
                                 ),
                                 onPressed: () {
-                                  Provider.of<ThemeNotifier>(context, listen: false).toggleTheme();
+                                  Provider.of<ThemeNotifier>(context,
+                                          listen: false)
+                                      .toggleTheme();
                                 },
                                 tooltip: "Toggle Theme",
                               ),
                               IconButton(
                                 icon: Icon(
                                   Icons.settings,
-                                  color: theme.primaryColor.withOpacity(0.7), // Slightly less prominent
+                                  color: theme.primaryColor.withOpacity(
+                                      0.7), // Slightly less prominent
                                 ),
                                 onPressed: _navigateToSettings,
                                 tooltip: "Settings",
@@ -267,12 +285,14 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: Row(
                   children: <Widget>[
                     IconButton(
-                      icon: Icon(Icons.widgets_outlined, color: taskbarIconColor), // Updated "Start" icon
+                      icon: Icon(Icons.widgets_outlined,
+                          color: taskbarIconColor), // Updated "Start" icon
                       onPressed: _toggleStartMenu, // Call toggle method
                       tooltip: 'Start', // Updated tooltip
                     ),
                     IconButton(
-                      icon: Icon(Icons.folder_outlined, color: taskbarIconColor),
+                      icon:
+                          Icon(Icons.folder_outlined, color: taskbarIconColor),
                       onPressed: () {
                         AppLauncher.openFileManager();
                       },
@@ -284,7 +304,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(taskbarFormattedTime, style: taskbarTextStyle),
-                        Text(taskbarFormattedDate, style: taskbarTextStyle.copyWith(fontSize: 11)),
+                        Text(taskbarFormattedDate,
+                            style: taskbarTextStyle.copyWith(fontSize: 11)),
                       ],
                     )
                   ],
@@ -301,22 +322,32 @@ class _MyHomePageState extends State<MyHomePage> {
               // Instead of right:0 for full width, let's give it a max width for larger screens
               // and center it if it's not full width.
               // For now, let's make it start from left and have a certain width or take full if small.
-              child: Container( // Use a container to constrain width if needed
-                width: MediaQuery.of(context).size.width > 600 ? 400 : MediaQuery.of(context).size.width, // Max width of 400, else full width
-                height: MediaQuery.of(context).size.height * 0.65, // 65% of screen height
+              child: Container(
+                // Use a container to constrain width if needed
+                width: MediaQuery.of(context).size.width > 600
+                    ? 400
+                    : MediaQuery.of(context)
+                        .size
+                        .width, // Max width of 400, else full width
+                height: MediaQuery.of(context).size.height *
+                    0.65, // 65% of screen height
                 child: Material(
                   elevation: 12.0, // Increased elevation for more pop
-                  color: theme.colorScheme.surface.withOpacity(0.98), // Use surface color from theme, slightly transparent
-                  shape: const RoundedRectangleBorder( // Optional: slightly rounded corners for the top
-                     borderRadius: BorderRadius.only(topLeft: Radius.circular(8), topRight: Radius.circular(8))
-                  ),
+                  color: theme.colorScheme.surface.withOpacity(
+                      0.98), // Use surface color from theme, slightly transparent
+                  shape: const RoundedRectangleBorder(
+                      // Optional: slightly rounded corners for the top
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(8),
+                          topRight: Radius.circular(8))),
                   child: Column(
                     children: [
                       Padding(
                         padding: const EdgeInsets.all(12.0),
                         child: Text(
                           "Start Menu", // Placeholder Title
-                          style: theme.textTheme.headlineSmall?.copyWith(color: theme.colorScheme.onSurface),
+                          style: theme.textTheme.headlineSmall
+                              ?.copyWith(color: theme.colorScheme.onSurface),
                         ),
                       ),
                       const Divider(),
@@ -355,8 +386,8 @@ class AppDrawer extends StatefulWidget {
 }
 
 class _AppDrawerState extends State<AppDrawer> {
-  List<Map<String, String>> _apps = [];
-  List<Map<String, String>> _filteredApps = [];
+  List<Map<String, dynamic>> _apps = []; // Changed type
+  List<Map<String, dynamic>> _filteredApps = []; // Changed type
   bool _isLoading = true;
   final TextEditingController _searchController = TextEditingController();
 
@@ -372,7 +403,8 @@ class _AppDrawerState extends State<AppDrawer> {
     setState(() {
       _isLoading = true;
     });
-    final List<Map<String, String>> apps = await AppLauncher.getInstalledApps();
+    final List<Map<String, dynamic>> apps =
+        await AppLauncher.getInstalledApps(); // Changed type
     if (!mounted) return;
     setState(() {
       _apps = apps;
@@ -406,17 +438,26 @@ class _AppDrawerState extends State<AppDrawer> {
       body: Column(
         children: <Widget>[
           Padding(
-            padding: const EdgeInsets.fromLTRB(16.0, 40.0, 16.0, 16.0), // Adjust top padding for status bar
+            padding: const EdgeInsets.fromLTRB(
+                16.0, 40.0, 16.0, 16.0), // Adjust top padding for status bar
             child: TextField(
               controller: _searchController,
-              style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color), // Use theme for input text color
+              style: TextStyle(
+                  color: Theme.of(context)
+                      .textTheme
+                      .bodyLarge
+                      ?.color), // Use theme for input text color
               decoration: InputDecoration(
                 hintText: 'Search apps...',
                 // hintStyle will be picked from inputDecorationTheme in theme.dart
                 // fillColor will be picked from inputDecorationTheme in theme.dart
                 prefixIcon: Icon(
                   Icons.search,
-                  color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.7), // Theme-aware icon color
+                  color: Theme.of(context)
+                      .textTheme
+                      .bodyLarge
+                      ?.color
+                      ?.withOpacity(0.7), // Theme-aware icon color
                 ),
               ),
             ),
@@ -431,7 +472,10 @@ class _AppDrawerState extends State<AppDrawer> {
                               ? 'No apps installed.'
                               : 'No apps found matching your search.',
                           // Use theme for this text
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(color: Colors.grey[600]),
                         ),
                       )
                     : ListView.builder(
@@ -443,16 +487,19 @@ class _AppDrawerState extends State<AppDrawer> {
 
                           return ListTile(
                             // Use theme for list item text
-                            title: Text(appName, style: Theme.of(context).textTheme.bodyLarge),
+                            title: Text(appName,
+                                style: Theme.of(context).textTheme.bodyLarge),
                             onTap: () {
                               if (packageName.isNotEmpty) {
                                 AppLauncher.launchApp(packageName);
                               } else {
-                                print("Error: Package name is missing for $appName");
+                                print(
+                                    "Error: Package name is missing for $appName");
                                 if (mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text("Cannot launch $appName: Package name missing."))
-                                  );
+                                      SnackBar(
+                                          content: Text(
+                                              "Cannot launch $appName: Package name missing.")));
                                 }
                               }
                             },

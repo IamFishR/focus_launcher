@@ -9,8 +9,8 @@ class SelectFavoriteAppPage extends StatefulWidget {
 }
 
 class _SelectFavoriteAppPageState extends State<SelectFavoriteAppPage> {
-  List<Map<String, String>> _allApps = [];
-  List<Map<String, String>> _filteredApps = [];
+  List<Map<String, dynamic>> _allApps = []; // Changed type
+  List<Map<String, dynamic>> _filteredApps = []; // Changed type
   bool _isLoading = true;
   final TextEditingController _searchController = TextEditingController();
 
@@ -26,7 +26,9 @@ class _SelectFavoriteAppPageState extends State<SelectFavoriteAppPage> {
     setState(() {
       _isLoading = true;
     });
-    final List<Map<String, String>> apps = await AppLauncher.getInstalledApps();
+    // getInstalledApps now returns List<Map<String, dynamic>>
+    final List<Map<String, dynamic>> apps =
+        await AppLauncher.getInstalledApps(); // Changed type
     if (!mounted) return;
     setState(() {
       _allApps = apps;
@@ -65,12 +67,17 @@ class _SelectFavoriteAppPageState extends State<SelectFavoriteAppPage> {
             padding: const EdgeInsets.all(16.0),
             child: TextField(
               controller: _searchController,
-              style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+              style: TextStyle(
+                  color: Theme.of(context).textTheme.bodyLarge?.color),
               decoration: InputDecoration(
                 hintText: 'Search apps...',
                 prefixIcon: Icon(
                   Icons.search,
-                  color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.7),
+                  color: Theme.of(context)
+                      .textTheme
+                      .bodyLarge
+                      ?.color
+                      ?.withOpacity(0.7),
                 ),
               ),
             ),
@@ -94,7 +101,8 @@ class _SelectFavoriteAppPageState extends State<SelectFavoriteAppPage> {
                           final appName = app['name'] ?? 'Unknown App';
 
                           return ListTile(
-                            title: Text(appName, style: Theme.of(context).textTheme.bodyLarge),
+                            title: Text(appName,
+                                style: Theme.of(context).textTheme.bodyLarge),
                             onTap: () {
                               // Pop with the selected app data
                               Navigator.pop(context, app);
