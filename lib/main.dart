@@ -2,10 +2,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPreferences
 import 'app_launcher.dart';
 import 'theme_notifier.dart';
 import 'theme.dart';
-import 'settings_page.dart'; // Import SettingsPage
+import 'settings_page.dart'; // Import SettingsPage // Already correctly importing keys from settings_page
 
 void main() {
   runApp(
@@ -44,16 +45,33 @@ class _MyHomePageState extends State<MyHomePage> {
   late Timer _timer;
   late DateTime _currentTime;
 
+  String? _favoriteApp1Name;
+  String? _favoriteApp1Package;
+  String? _favoriteApp2Name;
+  String? _favoriteApp2Package;
+
   @override
   void initState() {
     super.initState();
     _currentTime = DateTime.now();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (mounted) { // Check if the widget is still in the tree
+      if (mounted) {
         setState(() {
           _currentTime = DateTime.now();
         });
       }
+    });
+    _loadFavoriteApps();
+  }
+
+  Future<void> _loadFavoriteApps() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    setState(() {
+      _favoriteApp1Name = prefs.getString(favApp1NameKey); // favApp1NameKey from settings_page.dart
+      _favoriteApp1Package = prefs.getString(favApp1PackageKey);
+      _favoriteApp2Name = prefs.getString(favApp2NameKey);
+      _favoriteApp2Package = prefs.getString(favApp2PackageKey);
     });
   }
 
@@ -64,13 +82,21 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _onVerticalDragUpdate(DragUpdateDetails details) {
-    // Check for swipe up with a velocity threshold
     if (details.primaryDelta != null && details.primaryDelta! < -7) {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const AppDrawer()),
       );
     }
+  }
+
+  void _navigateToSettings() async {
+    // Navigate and then reload favorites when settings page is popped
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const SettingsPage()),
+    );
+    _loadFavoriteApps(); // Reload favorites after returning
   }
 
   @override
@@ -123,15 +149,82 @@ class _MyHomePageState extends State<MyHomePage> {
                         Icons.settings,
                         color: Theme.of(context).primaryColor,
                       ),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const SettingsPage()),
-                        );
-                      },
+                      onPressed: _navigateToSettings, // Updated to call _navigateToSettings
                     ),
                   ],
                 )
+              ),
+              Positioned( // Position the call button in the bottom-left corner
+                bottom: 40.0,
+                left: 20.0,
+                child: IconButton(
+                  icon: Icon(
+                    Icons.phone_outlined,
+                    color: Theme.of(context).primaryColor, // Use primaryColor from theme
+                    size: 28.0, // Slightly larger icon for a primary action button
+                  ),
+                  onPressed: () {
+                    AppLauncher.openDialer();
+                  },
+                ),
+              ),
+              Positioned(
+                bottom: 40.0, // Match the call button's vertical position
+                right: 20.0,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    if (_favoriteApp1Name != null && _favoriteApp1Name!.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 6.0), // Add some padding below first fav
+                        child: TextButton(
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            minimumSize: Size.zero, // Remove default minimum size
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap, // Remove extra tap area
+                          ),
+                          onPressed: () {
+                            if (_favoriteApp1Package != null && _favoriteApp1Package!.isNotEmpty) {
+                              AppLauncher.launchApp(_favoriteApp1Package!);
+                            }
+                          },
+                          child: Text(
+                            _favoriteApp1Name!,
+                            textAlign: TextAlign.end,
+                            style: TextStyle(
+                              color: Theme.of(context).primaryColor,
+                              fontSize: 16.0,
+                            ),
+                          ),
+                        ),
+                      ),
+                    if (_favoriteApp2Name != null && _favoriteApp2Name!.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 6.0), // Add some padding above second fav
+                        child: TextButton(
+                           style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          onPressed: () {
+                            if (_favoriteApp2Package != null && _favoriteApp2Package!.isNotEmpty) {
+                              AppLauncher.launchApp(_favoriteApp2Package!);
+                            }
+                          },
+                          child: Text(
+                            _favoriteApp2Name!,
+                            textAlign: TextAlign.end,
+                            style: TextStyle(
+                              color: Theme.of(context).primaryColor,
+                              fontSize: 16.0,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ],
           ),
