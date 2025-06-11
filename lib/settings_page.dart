@@ -8,6 +8,7 @@ const String favApp1NameKey = 'favorite_app_1_name';
 const String favApp1PackageKey = 'favorite_app_1_package';
 const String favApp2NameKey = 'favorite_app_2_name';
 const String favApp2PackageKey = 'favorite_app_2_package';
+const String hiddenAppPackagesKey = 'hidden_app_packages'; // Added key
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -22,10 +23,68 @@ class _SettingsPageState extends State<SettingsPage> {
   String? _favApp2Name;
   String? _favApp2Package;
 
+  // State variables for app visibility
+  List<Map<String, dynamic>> _allApps = [];
+  List<String> _hiddenPackages = [];
+  bool _isLoadingApps = true;
+
   @override
   void initState() {
     super.initState();
     _loadFavoriteApps();
+    _loadAllAppsAndPreferences(); // Added call
+  }
+
+  // New method to load all apps and hidden app preferences
+  Future<void> _loadAllAppsAndPreferences() async {
+    if (!mounted) return;
+    setState(() {
+      _isLoadingApps = true;
+    });
+
+    try {
+      final List<dynamic> apps = await AppLauncher.getInstalledApps();
+      final List<Map<String, dynamic>> allAppsList = apps.map((app) => Map<String, dynamic>.from(app as Map)).toList();
+      allAppsList.sort((a, b) => (a['name'] as String? ?? '').toLowerCase().compareTo((b['name'] as String? ?? '').toLowerCase()));
+
+      final prefs = await SharedPreferences.getInstance();
+      final List<String>? hiddenPackages = prefs.getStringList(hiddenAppPackagesKey);
+
+      if (!mounted) return;
+      setState(() {
+        _allApps = allAppsList;
+        _hiddenPackages = hiddenPackages ?? [];
+        _isLoadingApps = false;
+      });
+    } catch (e) {
+      // Handle error if needed, e.g., show a snackbar
+      if (!mounted) return;
+      setState(() {
+        _isLoadingApps = false;
+      });
+      print('Error loading apps: $e'); // Or use a logger
+    }
+  }
+
+  // New method to toggle app visibility and save preferences
+  Future<void> _toggleAppVisibility(String packageName, bool isHidden) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+
+    final List<String> updatedHiddenPackages = List<String>.from(_hiddenPackages);
+    if (isHidden) {
+      if (!updatedHiddenPackages.contains(packageName)) {
+        updatedHiddenPackages.add(packageName);
+      }
+    } else {
+      updatedHiddenPackages.remove(packageName);
+    }
+
+    await prefs.setStringList(hiddenAppPackagesKey, updatedHiddenPackages);
+    if (!mounted) return;
+    setState(() {
+      _hiddenPackages = updatedHiddenPackages;
+    });
   }
 
   Future<void> _loadFavoriteApps() async {
@@ -170,6 +229,56 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             onTap: () => _selectFavoriteApp(2),
           ),
+
+          const Divider(height: 40.0), // Visual separation for app visibility settings
+
+          Text(
+            'App Visibility in Start Menu',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: 8.0),
+          Text(
+            'Choose which apps are visible in the app drawer.',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 16.0),
+
+          _isLoadingApps
+              ? const Center(child: CircularProgressIndicator())
+              : _allApps.isEmpty
+                  ? Center(
+                      child: Text(
+                        'No apps found or unable to load apps.',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    )
+                  : ListView.builder(
+                      shrinkWrap: true, // Important for ListView inside another ListView
+                      physics: const NeverScrollableScrollPhysics(), // Disable scrolling for the inner ListView
+                      itemCount: _allApps.length,
+                      itemBuilder: (context, index) {
+                        final app = _allApps[index];
+                        final String appName = app['name'] as String? ?? 'Unknown App';
+                        final String packageName = app['packageName'] as String? ?? '';
+
+                        if (packageName.isEmpty) {
+                          // Skip apps with no package name, or handle appropriately
+                          return const SizedBox.shrink();
+                        }
+
+                        final bool isVisible = !_hiddenPackages.contains(packageName);
+
+                        return SwitchListTile(
+                          title: Text(appName),
+                          value: isVisible,
+                          onChanged: (bool value) {
+                            _toggleAppVisibility(packageName, !value);
+                          },
+                          // Optional: Add an icon for the app
+                          // secondary: AppLauncher.getAppIcon(packageName), // Assuming you have a method to get app icons
+                        );
+                      },
+                    ),
         ],
       ),
     );

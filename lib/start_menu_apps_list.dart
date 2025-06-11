@@ -1,6 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Import shared_preferences
 import 'app_launcher.dart'; // We'll modify this later for icons
+
+// Define the key consistently (ideally, this would be in a shared constants file)
+const String hiddenAppPackagesKey = 'hidden_app_packages';
 
 class StartMenuAppsList extends StatefulWidget {
   const StartMenuAppsList({super.key});
@@ -34,8 +38,18 @@ class _StartMenuAppsListState extends State<StartMenuAppsList> {
       final List<Map<String, dynamic>> appsData =
           await AppLauncher.getInstalledApps();
 
-      // Sort apps alphabetically by name directly on appsData
-      appsData.sort((a, b) {
+      // Load hidden packages
+      final prefs = await SharedPreferences.getInstance();
+      final List<String> hiddenPackages = prefs.getStringList(hiddenAppPackagesKey) ?? [];
+
+      // Filter appsData to exclude hidden apps
+      final List<Map<String, dynamic>> visibleAppsData = appsData.where((app) {
+        final packageName = app['packageName'] as String?;
+        return packageName != null && !hiddenPackages.contains(packageName);
+      }).toList();
+
+      // Sort visible apps alphabetically by name
+      visibleAppsData.sort((a, b) {
         final String nameA = a['name']?.toLowerCase() ?? '';
         final String nameB = b['name']?.toLowerCase() ?? '';
         return nameA.compareTo(nameB);
@@ -43,8 +57,8 @@ class _StartMenuAppsListState extends State<StartMenuAppsList> {
 
       if (!mounted) return;
       setState(() {
-        _apps = appsData;
-        _filteredApps = appsData;
+        _apps = visibleAppsData; // Use filtered and sorted list
+        _filteredApps = visibleAppsData; // Use filtered and sorted list
         _isLoading = false;
       });
     } catch (e) {
