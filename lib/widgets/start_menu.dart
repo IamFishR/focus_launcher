@@ -20,10 +20,10 @@ class StartMenuPanel extends StatelessWidget {
 
     return Positioned(
       bottom: taskbarHeight, // Position above the taskbar
-      left: MediaQuery.of(context).size.width > 600
-          ? MediaQuery.of(context).size.width *
-              0.3 // Centered for larger screens
-          : 20, // Small padding for smaller screens
+      // left: MediaQuery.of(context).size.width > 600
+      //     ? MediaQuery.of(context).size.width *
+      //         0.3 // Centered for larger screens
+      //     : 20, // Small padding for smaller screens
       child: SizedBox(
         width: MediaQuery.of(context).size.width > 600
             ? MediaQuery.of(context).size.width * 0.4 // 40% of screen width
@@ -37,8 +37,8 @@ class StartMenuPanel extends StatelessWidget {
             filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0), // Blur effect
             child: Material(
               elevation: 12.0, // Increased elevation for more pop
-              color: theme.colorScheme.surface
-                  .withOpacity(0.8), // Semi-transparent
+              color:
+                  theme.colorScheme.surface.withAlpha(204), // Semi-transparent
               child: Column(
                 children: [
                   Padding(

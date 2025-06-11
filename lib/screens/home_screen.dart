@@ -96,43 +96,44 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          Column(
-            children: [
-              Expanded(
-                child: GestureDetector(
-                  onVerticalDragUpdate: _onVerticalDragUpdate,
-                  onTap: () {
-                    // Tap on desktop area to close Start Menu
-                    if (_isStartMenuVisible) {
-                      _toggleStartMenu();
-                    }
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          theme.colorScheme.background,
-                          theme.colorScheme.background.withOpacity(0.8),
-                        ],
-                      ),
-                    ),
-                    child: Stack(
-                      children: [
-                        _buildMainContent(theme),
-                        _buildSettingsButtons(themeNotifier, theme),
-                      ],
-                    ),
-                  ),
-                ),
+          // Background image covering the entire screen
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/wallpapers/bg.jpg'),
+                fit: BoxFit.cover,
               ),
-              TaskBar(
-                currentTime: _currentTime,
-                toggleStartMenu: _toggleStartMenu,
-              ),
-            ],
+            ),
           ),
+          // Main content area
+          Expanded(
+            child: GestureDetector(
+              onVerticalDragUpdate: _onVerticalDragUpdate,
+              onTap: () {
+                // Tap on desktop area to close Start Menu
+                if (_isStartMenuVisible) {
+                  _toggleStartMenu();
+                }
+              },
+              child: Stack(
+                children: [
+                  _buildMainContent(theme),
+                  _buildSettingsButtons(themeNotifier, theme),
+                ],
+              ),
+            ),
+          ),
+          // Taskbar positioned at the bottom of the screen
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: TaskBar(
+              currentTime: _currentTime,
+              toggleStartMenu: _toggleStartMenu,
+            ),
+          ),
+          // Start menu panel when visible
           if (_isStartMenuVisible)
             StartMenuPanel(
               apps: _apps,

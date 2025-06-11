@@ -1,33 +1,46 @@
 import 'package:flutter/services.dart';
+import 'package:installed_apps/app_info.dart';
+import 'package:installed_apps/installed_apps.dart';
 
 class AppLauncher {
   static const MethodChannel _channel =
       MethodChannel('com.focuslauncher/app_ops');
 
-  // Updated to reflect that it can now contain icon data (Uint8List), hence dynamic
+  // Updated to use InstalledApps package for getting installed apps
   static Future<List<Map<String, dynamic>>> getInstalledApps() async {
     try {
-      final List<dynamic>? apps =
-          await _channel.invokeMethod('getInstalledApps');
-      // Ensure each item in the list is a Map<String, dynamic>
-      return apps?.map((app) {
-            if (app is Map) {
-              return Map<String, dynamic>.from(
-                  app.map((key, value) => MapEntry(key.toString(), value)));
-            }
-            return <String,
-                dynamic>{}; // Should not happen if native side is correct
-          }).toList() ??
-          [];
+      // Get installed apps using InstalledApps package
+      // excludeSystemApps: true - Only get user apps
+      // withIcon: false - Don't load icons for performance (can be changed if needed)
+      // packageNamePrefix: "" - No filter on package names
+      final List<AppInfo> apps =
+          await InstalledApps.getInstalledApps(true, false, "");
+
+      // Convert AppInfo objects to Map<String, dynamic>
+      final List<Map<String, dynamic>> appsList = apps
+          .map((app) => {
+                'name': app.name,
+                'packageName': app.packageName,
+                // Add any other properties you need
+              })
+          .toList();
+
+      // Sort apps alphabetically by name (A-Z)
+      appsList.sort((a, b) => (a['name'] as String)
+          .toLowerCase()
+          .compareTo((b['name'] as String).toLowerCase()));
+
+      return appsList;
     } on PlatformException catch (e) {
       print("Failed to get installed apps: '${e.message}'.");
       return [];
     }
   }
 
+  // Updated to use InstalledApps package for launching apps
   static Future<void> launchApp(String packageName) async {
     try {
-      await _channel.invokeMethod('launchApp', {'packageName': packageName});
+      await InstalledApps.startApp(packageName);
     } on PlatformException catch (e) {
       // Handle error
       print("Failed to launch app: '${e.message}'.");
