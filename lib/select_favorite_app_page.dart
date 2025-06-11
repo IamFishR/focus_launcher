@@ -77,7 +77,7 @@ class _SelectFavoriteAppPageState extends State<SelectFavoriteAppPage> {
                       .textTheme
                       .bodyLarge
                       ?.color
-                      ?.withOpacity(0.7),
+                      ?.withAlpha((0.7 * 255).round()),
                 ),
               ),
             ),

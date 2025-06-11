@@ -17,12 +17,18 @@ final ThemeData lightTheme = ThemeData(
     onError: Colors.white,
   ),
   textTheme: TextTheme(
-    displayLarge: TextStyle(color: Colors.grey[800], fontSize: 72, fontWeight: FontWeight.bold),
-    displayMedium: TextStyle(color: Colors.grey[800], fontSize: 48, fontWeight: FontWeight.bold),
-    displaySmall: TextStyle(color: Colors.grey[800], fontSize: 36, fontWeight: FontWeight.bold),
-    headlineMedium: TextStyle(color: Colors.grey[800], fontSize: 24, fontWeight: FontWeight.normal),
-    headlineSmall: TextStyle(color: Colors.grey[800], fontSize: 20, fontWeight: FontWeight.normal),
-    titleLarge: TextStyle(color: Colors.grey[800], fontSize: 18, fontWeight: FontWeight.bold),
+    displayLarge: TextStyle(
+        color: Colors.grey[800], fontSize: 72, fontWeight: FontWeight.bold),
+    displayMedium: TextStyle(
+        color: Colors.grey[800], fontSize: 48, fontWeight: FontWeight.bold),
+    displaySmall: TextStyle(
+        color: Colors.grey[800], fontSize: 36, fontWeight: FontWeight.bold),
+    headlineMedium: TextStyle(
+        color: Colors.grey[800], fontSize: 24, fontWeight: FontWeight.normal),
+    headlineSmall: TextStyle(
+        color: Colors.grey[800], fontSize: 20, fontWeight: FontWeight.normal),
+    titleLarge: TextStyle(
+        color: Colors.grey[800], fontSize: 18, fontWeight: FontWeight.bold),
     bodyLarge: TextStyle(color: Colors.grey[800], fontSize: 16),
     bodyMedium: TextStyle(color: Colors.grey[800], fontSize: 14),
   ),
@@ -30,7 +36,8 @@ final ThemeData lightTheme = ThemeData(
     backgroundColor: Colors.blue, // Example, can be refined
     foregroundColor: Colors.white, // Text/icons on app bar
     elevation: 2.0,
-    titleTextStyle: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600),
+    titleTextStyle: TextStyle(
+        color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600),
   ),
   inputDecorationTheme: InputDecorationTheme(
     filled: true,
@@ -40,11 +47,12 @@ final ThemeData lightTheme = ThemeData(
       borderRadius: BorderRadius.circular(25.0),
       borderSide: BorderSide.none,
     ),
-    contentPadding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
+    contentPadding:
+        const EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
   ),
   textSelectionTheme: TextSelectionThemeData(
     cursorColor: Colors.blue,
-    selectionColor: Colors.blue.withOpacity(0.3),
+    selectionColor: Colors.blue.withAlpha((0.3 * 255).round()),
     selectionHandleColor: Colors.blue,
   ),
 );
@@ -66,12 +74,18 @@ final ThemeData darkTheme = ThemeData(
     onError: Colors.white,
   ),
   textTheme: TextTheme(
-    displayLarge: TextStyle(color: Colors.grey[300], fontSize: 72, fontWeight: FontWeight.bold),
-    displayMedium: TextStyle(color: Colors.grey[300], fontSize: 48, fontWeight: FontWeight.bold),
-    displaySmall: TextStyle(color: Colors.grey[300], fontSize: 36, fontWeight: FontWeight.bold),
-    headlineMedium: TextStyle(color: Colors.grey[300], fontSize: 24, fontWeight: FontWeight.normal),
-    headlineSmall: TextStyle(color: Colors.grey[300], fontSize: 20, fontWeight: FontWeight.normal),
-    titleLarge: TextStyle(color: Colors.grey[300], fontSize: 18, fontWeight: FontWeight.bold),
+    displayLarge: TextStyle(
+        color: Colors.grey[300], fontSize: 72, fontWeight: FontWeight.bold),
+    displayMedium: TextStyle(
+        color: Colors.grey[300], fontSize: 48, fontWeight: FontWeight.bold),
+    displaySmall: TextStyle(
+        color: Colors.grey[300], fontSize: 36, fontWeight: FontWeight.bold),
+    headlineMedium: TextStyle(
+        color: Colors.grey[300], fontSize: 24, fontWeight: FontWeight.normal),
+    headlineSmall: TextStyle(
+        color: Colors.grey[300], fontSize: 20, fontWeight: FontWeight.normal),
+    titleLarge: TextStyle(
+        color: Colors.grey[300], fontSize: 18, fontWeight: FontWeight.bold),
     bodyLarge: TextStyle(color: Colors.grey[300], fontSize: 16),
     bodyMedium: TextStyle(color: Colors.grey[300], fontSize: 14),
   ),
@@ -79,7 +93,8 @@ final ThemeData darkTheme = ThemeData(
     backgroundColor: Colors.grey[900], // Example, can be refined
     foregroundColor: Colors.white, // Text/icons on app bar
     elevation: 2.0,
-    titleTextStyle: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600),
+    titleTextStyle: TextStyle(
+        color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600),
   ),
   inputDecorationTheme: InputDecorationTheme(
     filled: true,
@@ -89,11 +104,12 @@ final ThemeData darkTheme = ThemeData(
       borderRadius: BorderRadius.circular(25.0),
       borderSide: BorderSide.none,
     ),
-    contentPadding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
+    contentPadding:
+        const EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
   ),
-   textSelectionTheme: TextSelectionThemeData(
+  textSelectionTheme: TextSelectionThemeData(
     cursorColor: Colors.blue[300],
-    selectionColor: Colors.blue[300]?.withOpacity(0.3),
+    selectionColor: Colors.blue[300]?.withAlpha((0.3 * 255).round()),
     selectionHandleColor: Colors.blue[300],
   ),
 );

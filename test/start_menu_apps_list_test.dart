@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:focus_launcher/lib/start_menu_apps_list.dart'; // Adjust import path
+import 'package:focus_launcher/start_menu_apps_list.dart'; // Fixed import path
 
 // Key for SharedPreferences, consistent with settings_page.dart and start_menu_apps_list.dart
 const String hiddenAppPackagesKey = 'hidden_app_packages';
@@ -21,7 +21,8 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUp(() {
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(channel, (MethodCall methodCall) async {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
       if (methodCall.method == 'getInstalledApps') {
         return mockApps;
       }
@@ -35,13 +36,16 @@ void main() {
   });
 
   tearDown(() {
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(channel, null);
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, null);
   });
 
   group('Start Menu App List Filtering', () {
-    testWidgets('displays loading indicator then app list', (WidgetTester tester) async {
+    testWidgets('displays loading indicator then app list',
+        (WidgetTester tester) async {
       // Temporarily override handler for this test to introduce delay
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(channel, (MethodCall methodCall) async {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
         if (methodCall.method == 'getInstalledApps') {
           await Future.delayed(const Duration(milliseconds: 50));
           return []; // Initially empty
@@ -53,7 +57,8 @@ void main() {
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
       // Setup handler to return apps now
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(channel, (MethodCall methodCall) async {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
         if (methodCall.method == 'getInstalledApps') {
           return mockApps;
         }
@@ -67,7 +72,8 @@ void main() {
       expect(find.text('Gemini'), findsOneWidget);
     });
 
-    testWidgets('displays all apps when no preferences set', (WidgetTester tester) async {
+    testWidgets('displays all apps when no preferences set',
+        (WidgetTester tester) async {
       SharedPreferences.setMockInitialValues({
         // hiddenAppPackagesKey is not set or is empty
       });
@@ -81,7 +87,8 @@ void main() {
       expect(find.byType(ListTile), findsNWidgets(mockApps.length));
     });
 
-    testWidgets('filters hidden apps from display', (WidgetTester tester) async {
+    testWidgets('filters hidden apps from display',
+        (WidgetTester tester) async {
       SharedPreferences.setMockInitialValues({
         hiddenAppPackagesKey: ['com.appb'], // App B is hidden
       });
@@ -134,9 +141,8 @@ void main() {
       // This depends on the exact implementation of the StartMenuAppsList UI when search yields no results
       // For now, we'll just check that the apps that shouldn't be there are not.
       // expect(find.text('No apps found.'), findsOneWidget); // Or similar message
-       // Check for the "No apps found" text which is part of the widget's build method
+      // Check for the "No apps found" text which is part of the widget's build method
       expect(find.text('No apps found.'), findsOneWidget);
-
 
       // Clear search to see App A and App B again
       await tester.enterText(searchField, '');
@@ -144,11 +150,15 @@ void main() {
       expect(find.text('App A'), findsOneWidget);
       expect(find.text('App B'), findsOneWidget);
       expect(find.text('Gemini'), findsNothing);
-
     });
-     testWidgets('displays "No apps found." when all apps are hidden', (WidgetTester tester) async {
+    testWidgets('displays "No apps found." when all apps are hidden',
+        (WidgetTester tester) async {
       SharedPreferences.setMockInitialValues({
-        hiddenAppPackagesKey: ['com.appa', 'com.appb', 'com.gemini'], // All apps hidden
+        hiddenAppPackagesKey: [
+          'com.appa',
+          'com.appb',
+          'com.gemini'
+        ], // All apps hidden
       });
 
       await tester.pumpWidget(const MaterialApp(home: StartMenuAppsList()));

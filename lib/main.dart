@@ -2,10 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPreferences
 import 'app_launcher.dart';
 import 'theme_notifier.dart';
-import 'theme.dart';
 import 'settings_page.dart';
 import 'start_menu_apps_list.dart'; // Import the new widget
 
@@ -46,7 +44,7 @@ class _MyHomePageState extends State<MyHomePage> {
   late Timer _timer;
   late DateTime _currentTime;
 
-  String? _favoriteApp1Name;
+  // String? _favoriteApp1Name;
   // String? _favoriteApp1Name; // Removed: No longer used for home screen favs
   // String? _favoriteApp1Package; // Removed
   // String? _favoriteApp2Name; // Removed
@@ -112,14 +110,13 @@ class _MyHomePageState extends State<MyHomePage> {
     // _loadFavoriteApps(); // Removed: No longer used for home screen favs
   }
 
-  @override
   // Method to build the right pane of the Start Menu
   Widget _buildStartMenuRightPane(BuildContext context) {
     final theme = Theme.of(context);
     return Container(
       // width: 180, // Fixed width for the right pane, or use flex
       padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 8.0),
-      // color: theme.colorScheme.surfaceVariant.withOpacity(0.1), // Optional subtle background
+      // color: theme.colorScheme.surfaceVariant.withAlpha((0.1 * 255).round()), // Optional subtle background
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
@@ -182,9 +179,11 @@ class _MyHomePageState extends State<MyHomePage> {
         ? Colors.grey[850]! // Darker grey for dark mode taskbar
         : Colors.grey[200]!; // Lighter grey for light mode taskbar
 
-    Color taskbarIconColor = theme.colorScheme.onSurface.withOpacity(0.8);
+    Color taskbarIconColor =
+        theme.colorScheme.onSurface.withAlpha((0.8 * 255).round());
     TextStyle taskbarTextStyle = TextStyle(
-        color: theme.colorScheme.onSurface.withOpacity(0.9), fontSize: 13);
+        color: theme.colorScheme.onSurface.withAlpha((0.9 * 255).round()),
+        fontSize: 13);
     const double taskbarHeight = 56.0;
 
     return Scaffold(
@@ -219,7 +218,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   style:
                                       theme.textTheme.headlineMedium?.copyWith(
                                     color: theme.colorScheme.onSurface
-                                        .withOpacity(0.7),
+                                        .withAlpha((0.7 * 255).round()),
                                   ),
                                 ),
                                 const SizedBox(height: 24), // Increased spacing
@@ -229,7 +228,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   style: theme.textTheme.titleSmall?.copyWith(
                                     fontStyle: FontStyle.italic,
                                     color: theme.colorScheme.onSurface
-                                        .withOpacity(0.6),
+                                        .withAlpha((0.6 * 255).round()),
                                     height:
                                         1.5, // Improved line spacing for readability
                                   ),
@@ -249,8 +248,9 @@ class _MyHomePageState extends State<MyHomePage> {
                                   themeNotifier.isDarkMode
                                       ? Icons.light_mode
                                       : Icons.dark_mode,
-                                  color: theme.primaryColor.withOpacity(
-                                      0.7), // Slightly less prominent
+                                  color: theme.primaryColor.withAlpha(
+                                      (0.7 * 255)
+                                          .round()), // Slightly less prominent
                                 ),
                                 onPressed: () {
                                   Provider.of<ThemeNotifier>(context,
@@ -262,8 +262,9 @@ class _MyHomePageState extends State<MyHomePage> {
                               IconButton(
                                 icon: Icon(
                                   Icons.settings,
-                                  color: theme.primaryColor.withOpacity(
-                                      0.7), // Slightly less prominent
+                                  color: theme.primaryColor.withAlpha(
+                                      (0.7 * 255)
+                                          .round()), // Slightly less prominent
                                 ),
                                 onPressed: _navigateToSettings,
                                 tooltip: "Settings",
@@ -322,7 +323,7 @@ class _MyHomePageState extends State<MyHomePage> {
               // Instead of right:0 for full width, let's give it a max width for larger screens
               // and center it if it's not full width.
               // For now, let's make it start from left and have a certain width or take full if small.
-              child: Container(
+              child: SizedBox(
                 // Use a container to constrain width if needed
                 width: MediaQuery.of(context).size.width > 600
                     ? 400
@@ -333,8 +334,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     0.65, // 65% of screen height
                 child: Material(
                   elevation: 12.0, // Increased elevation for more pop
-                  color: theme.colorScheme.surface.withOpacity(
-                      0.98), // Use surface color from theme, slightly transparent
+                  color: theme.colorScheme.surface.withAlpha((0.98 * 255)
+                      .round()), // Use surface color from theme, slightly transparent
                   shape: const RoundedRectangleBorder(
                       // Optional: slightly rounded corners for the top
                       borderRadius: BorderRadius.only(
@@ -457,7 +458,8 @@ class _AppDrawerState extends State<AppDrawer> {
                       .textTheme
                       .bodyLarge
                       ?.color
-                      ?.withOpacity(0.7), // Theme-aware icon color
+                      ?.withAlpha(
+                          (0.7 * 255).round()), // Theme-aware icon color
                 ),
               ),
             ),
