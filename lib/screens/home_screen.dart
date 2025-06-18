@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui'; // Import for BackdropFilter
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/app_launcher.dart';
@@ -21,7 +22,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   bool _isStartMenuVisible = false;
   List<Map<String, dynamic>> _apps = []; // Centralize apps list here
-
   // Method to toggle Start Menu visibility
   void _toggleStartMenu() {
     if (mounted) {
@@ -104,41 +104,56 @@ class _HomeScreenState extends State<HomeScreen> {
                 fit: BoxFit.cover,
               ),
             ),
-          ),
-          // Main content area
-          Expanded(
-            child: GestureDetector(
-              onVerticalDragUpdate: _onVerticalDragUpdate,
-              onTap: () {
-                // Tap on desktop area to close Start Menu
-                if (_isStartMenuVisible) {
-                  _toggleStartMenu();
-                }
-              },
+          ), // Global blur container applied to everything
+          BackdropFilter(
+            filter: ImageFilter.blur(
+                sigmaX: _isStartMenuVisible ? 10.0 : 0.0,
+                sigmaY: _isStartMenuVisible
+                    ? 6.0
+                    : 0.0), // Apply blur when start menu is visible
+            child: Container(              color: Colors.transparent, // Fully transparent container
               child: Stack(
                 children: [
-                  _buildMainContent(theme),
-                  _buildSettingsButtons(themeNotifier, theme),
+                  // Main content area
+                  Positioned.fill(
+                    child: GestureDetector(
+                      onVerticalDragUpdate: _onVerticalDragUpdate,
+                      onTap: () {
+                        // Tap on desktop area to close Start Menu
+                        if (_isStartMenuVisible) {
+                          _toggleStartMenu();
+                        }
+                      },
+                      child: Stack(
+                        children: [
+                          _buildMainContent(theme),
+                          _buildSettingsButtons(themeNotifier, theme),
+                        ],
+                      ),
+                    ),
+                  ),
+                  // Taskbar positioned at the bottom of the screen
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: TaskBar(
+                      currentTime: _currentTime,
+                      toggleStartMenu: _toggleStartMenu,
+                      useBlur: false, // Flag to disable individual blur
+                    ),
+                  ),
+                  // Start menu panel when visible
+                  if (_isStartMenuVisible)
+                    StartMenuPanel(
+                      apps: _apps,
+                      onClose: _toggleStartMenu,
+                      useBlur: false, // Flag to disable individual blur
+                    ),
                 ],
               ),
             ),
           ),
-          // Taskbar positioned at the bottom of the screen
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: TaskBar(
-              currentTime: _currentTime,
-              toggleStartMenu: _toggleStartMenu,
-            ),
-          ),
-          // Start menu panel when visible
-          if (_isStartMenuVisible)
-            StartMenuPanel(
-              apps: _apps,
-              onClose: _toggleStartMenu,
-            ),
         ],
       ),
     );
