@@ -66,7 +66,7 @@ class _StartMenuAppsListState extends State<StartMenuAppsList> {
       setState(() {
         _isLoading = false;
         _error = "Failed to load apps: $e";
-        print(_error);
+        
       });
     }
   }

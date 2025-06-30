@@ -89,7 +89,7 @@ class TaskBar extends StatelessWidget {
             onPressed: () {
               // This assumes you have a static method to open the file manager.
               // AppLauncher.openFileManager();
-              print("File Explorer Opened"); // Placeholder action
+              
             },
             tooltip: 'File Explorer',
           ),

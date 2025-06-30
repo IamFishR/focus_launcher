@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'app_launcher.dart';
 import 'select_favorite_app_page.dart'; // Import the new page
@@ -9,6 +12,8 @@ const String favApp1PackageKey = 'favorite_app_1_package';
 const String favApp2NameKey = 'favorite_app_2_name';
 const String favApp2PackageKey = 'favorite_app_2_package';
 const String hiddenAppPackagesKey = 'hidden_app_packages'; // Added key
+const String userNameKey = 'user_name';
+const String userProfileImageKey = 'user_profile_image';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -22,6 +27,8 @@ class _SettingsPageState extends State<SettingsPage> {
   String? _favApp1Package;
   String? _favApp2Name;
   String? _favApp2Package;
+  String? _userName;
+  String? _userProfileImage;
 
   // State variables for app visibility
   List<Map<String, dynamic>> _allApps = [];
@@ -33,6 +40,7 @@ class _SettingsPageState extends State<SettingsPage> {
     super.initState();
     _loadFavoriteApps();
     _loadAllAppsAndPreferences(); // Added call
+    _loadUserProfile();
   }
 
   // New method to load all apps and hidden app preferences
@@ -62,7 +70,7 @@ class _SettingsPageState extends State<SettingsPage> {
       setState(() {
         _isLoadingApps = false;
       });
-      print('Error loading apps: $e'); // Or use a logger
+      
     }
   }
 
@@ -124,6 +132,65 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
+  Future<void> _loadUserProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    setState(() {
+      _userName = prefs.getString(userNameKey);
+      _userProfileImage = prefs.getString(userProfileImageKey);
+    });
+  }
+
+  Future<void> _saveUserName(String name) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(userNameKey, name);
+    if (!mounted) return;
+    setState(() {
+      _userName = name;
+    });
+  }
+
+  Future<void> _pickProfileImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(userProfileImageKey, pickedFile.path);
+      if (!mounted) return;
+      setState(() {
+        _userProfileImage = pickedFile.path;
+      });
+    }
+  }
+
+  void _editUserName() {
+    final controller = TextEditingController(text: _userName);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Edit User Name'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(hintText: 'Enter your name'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              _saveUserName(controller.text);
+              Navigator.pop(context);
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
 
   void _selectFavoriteApp(int slot) async {
     final selectedApp = await Navigator.push<Map<String, String>>(
@@ -176,6 +243,32 @@ class _SettingsPageState extends State<SettingsPage> {
                 textAlign: TextAlign.center,
               ),
            ),
+          const Divider(height: 40.0), // Visual separation
+
+          Text(
+            'User Profile',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: 16.0),
+          ListTile(
+            leading: CircleAvatar(
+              radius: 30,
+              backgroundImage: _userProfileImage != null
+                  ? FileImage(File(_userProfileImage!))
+                  : null,
+              child: _userProfileImage == null
+                  ? const Icon(Icons.person, size: 30)
+                  : null,
+            ),
+            title: Text(_userName ?? 'User'),
+            subtitle: const Text('Tap to change profile picture'),
+            trailing: IconButton(
+              icon: const Icon(Icons.edit),
+              onPressed: _editUserName,
+            ),
+            onTap: _pickProfileImage,
+          ),
+
           const Divider(height: 40.0), // Visual separation
 
           Text(

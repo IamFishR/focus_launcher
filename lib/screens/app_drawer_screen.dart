@@ -1,115 +1,125 @@
 import 'package:flutter/material.dart';
-import '../services/app_launcher.dart';
+import 'package:installed_apps/installed_apps.dart';
+import 'package:installed_apps/app_info.dart';
+
+import 'package:focus_launcher/services/pinned_apps_notifier.dart';
+import 'package:provider/provider.dart';
 
 class AppDrawerScreen extends StatefulWidget {
-  final List<Map<String, dynamic>> apps;
-
-  const AppDrawerScreen({super.key, required this.apps});
+  const AppDrawerScreen({super.key});
 
   @override
-  State<AppDrawerScreen> createState() => _AppDrawerScreenState();
+  _AppDrawerScreenState createState() => _AppDrawerScreenState();
 }
 
 class _AppDrawerScreenState extends State<AppDrawerScreen> {
-  late List<Map<String, dynamic>> _filteredApps;
-  final TextEditingController _searchController = TextEditingController();
+  List<AppInfo> _apps = [];
 
   @override
   void initState() {
     super.initState();
-    _filteredApps = widget.apps;
-    _searchController.addListener(_filterApps);
+    _loadApps();
   }
 
-  void _filterApps() {
-    final query = _searchController.text.toLowerCase();
-    if (!mounted) return;
+  Future<void> _loadApps() async {
+    final apps = await InstalledApps.getInstalledApps(true, true);
     setState(() {
-      _filteredApps = widget.apps.where((app) {
-        final appName = app['name']?.toLowerCase() ?? '';
-        return appName.contains(query);
-      }).toList();
+      _apps = apps;
     });
   }
 
-  @override
-  void dispose() {
-    _searchController.removeListener(_filterApps);
-    _searchController.dispose();
-    super.dispose();
+  void _showPinAppDialog(AppInfo app) async {
+    if (app.packageName == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Cannot pin this app (package name missing).")),
+      );
+      return;
+    }
+
+    final pinnedAppsNotifier =
+        Provider.of<PinnedAppsNotifier>(context, listen: false);
+    final isPinned = pinnedAppsNotifier.isPinned(app.packageName);
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(isPinned ? "Unpin ${app.name}?" : "Pin ${app.name}?"),
+          content: Text(isPinned
+              ? "Do you want to unpin this app from the home screen?"
+              : "Do you want to pin this app to the home screen?"),
+          actions: <Widget>[
+            TextButton(
+              child: const Text("Cancel"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text(isPinned ? "Unpin" : "Pin"),
+              onPressed: () async {
+                await pinnedAppsNotifier.togglePin(app.packageName!);
+                if (!mounted) return;
+                Navigator.of(context).pop();
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                      content: Text(
+                          "${app.name} ${isPinned ? "unpinned" : "pinned"}!")),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-                16.0, 40.0, 16.0, 16.0), // Adjust top padding for status bar
-            child: TextField(
-              controller: _searchController,
-              style: TextStyle(
-                  color: Theme.of(context)
-                      .textTheme
-                      .bodyLarge
-                      ?.color), // Use theme for input text color
-              decoration: InputDecoration(
-                hintText: 'Search apps...',
-                // hintStyle will be picked from inputDecorationTheme in theme.dart
-                // fillColor will be picked from inputDecorationTheme in theme.dart
-                prefixIcon: Icon(
-                  Icons.search,
-                  color: Theme.of(context)
-                      .textTheme
-                      .bodyLarge
-                      ?.color
-                      ?.withAlpha(
-                          (0.7 * 255).round()), // Theme-aware icon color
-                ),
-              ),
-            ),
-          ),
-          Expanded(
-            child: _filteredApps.isEmpty
-                ? Center(
-                    child: Text(
-                      'No apps found.',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  )
-                : ListView.builder(
-                    itemCount: _filteredApps.length,
-                    itemBuilder: (context, index) {
-                      final app = _filteredApps[index];
-                      final appName = app['name'] ?? 'Unknown App';
-                      final packageName = app['packageName'] ?? '';
-
-                      return ListTile(
-                        title: Text(
-                          appName,
-                          style: Theme.of(context).textTheme.bodyLarge,
-                        ),
-                        onTap: () {
-                          if (packageName.isNotEmpty) {
-                            AppLauncher.launchApp(packageName);
-                          } else {
-                            print(
-                                "Error: Package name is missing for $appName");
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                    "Cannot launch $appName: Package name missing."),
-                              ),
-                            );
-                          }
-                        },
-                      );
-                    },
+      appBar: AppBar(
+        title: const Text("All Apps"),
+      ),
+      body: GridView.builder(
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 4,
+          crossAxisSpacing: 8.0,
+          mainAxisSpacing: 8.0,
+        ),
+        itemCount: _apps.length,
+        itemBuilder: (context, index) {
+          final app = _apps[index];
+          return GestureDetector(
+            onTap: () {
+              if (app.packageName != null) {
+                InstalledApps.startApp(app.packageName!);
+              }
+            },
+            onLongPress: () {
+              _showPinAppDialog(app);
+            },
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (app.icon != null)
+                  Image.memory(
+                    app.icon!,
+                    width: 48,
+                    height: 48,
                   ),
-          ),
-        ],
+                const SizedBox(height: 8.0),
+                Text(
+                  app.name,
+                  textAlign: TextAlign.center,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
 }
+

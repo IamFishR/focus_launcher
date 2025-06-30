@@ -66,7 +66,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       setState(() {
         _isLoadingApps = false;
       });
-      print('Error loading apps: $e'); // Or use a logger
+      
     }
   }
 
@@ -109,19 +109,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (slot == 1) {
       await prefs.setString(favApp1NameKey, name);
       await prefs.setString(favApp1PackageKey, packageName);
-      if (mounted)
+      if (mounted) {
         setState(() {
           _favApp1Name = name;
           _favApp1Package = packageName;
         });
+      }
     } else if (slot == 2) {
       await prefs.setString(favApp2NameKey, name);
       await prefs.setString(favApp2PackageKey, packageName);
-      if (mounted)
+      if (mounted) {
         setState(() {
           _favApp2Name = name;
           _favApp2Package = packageName;
         });
+      }
     }
   }
 
@@ -130,19 +132,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (slot == 1) {
       await prefs.remove(favApp1NameKey);
       await prefs.remove(favApp1PackageKey);
-      if (mounted)
+      if (mounted) {
         setState(() {
           _favApp1Name = null;
           _favApp1Package = null;
         });
+      }
     } else if (slot == 2) {
       await prefs.remove(favApp2NameKey);
       await prefs.remove(favApp2PackageKey);
-      if (mounted)
+      if (mounted) {
         setState(() {
           _favApp2Name = null;
           _favApp2Package = null;
         });
+      }
     }
   }
 

@@ -14,8 +14,8 @@ class AppLauncher {
         }
         return <String, dynamic>{}; // Should not happen if native side is correct
       }).toList() ?? [];
-    } on PlatformException catch (e) {
-      print("Failed to get installed apps: '${e.message}'.");
+    } catch (_) {
+      // Handle error if needed
       return [];
     }
   }
@@ -23,33 +23,31 @@ class AppLauncher {
   static Future<void> launchApp(String packageName) async {
     try {
       await _channel.invokeMethod('launchApp', {'packageName': packageName});
-    } on PlatformException catch (e) {
+    } on PlatformException catch (_) {
       // Handle error
-      print("Failed to launch app: '${e.message}'.");
     }
   }
 
   static Future<void> openDefaultLauncherSettings() async {
     try {
       await _channel.invokeMethod('openDefaultLauncherSettings');
-    } on PlatformException catch (e) {
-      print("Failed to open default launcher settings: '${e.message}'.");
+    } on PlatformException catch (_) {
+      // Handle error
     }
   }
 
   static Future<void> openDialer() async {
     try {
       await _channel.invokeMethod('openDialer');
-    } on PlatformException catch (e) {
-      print("Failed to open dialer: '${e.message}'.");
+    } on PlatformException catch (_) {
+      // Handle error
     }
   }
 
   static Future<void> openFileManager() async {
     try {
       await _channel.invokeMethod('openFileManager');
-    } on PlatformException catch (e) {
-      print("Failed to open file manager: '${e.message}'.");
+    } on PlatformException catch (_) {
       // Optionally, show a snackbar or toast to the user
     }
   }

@@ -46,7 +46,7 @@ class StartMenu extends StatelessWidget {
                 if (packageName.isNotEmpty) {
                   AppLauncher.launchApp(packageName);
                 } else {
-                  print("Error: Package name is missing for $appName");
+                  
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content:
